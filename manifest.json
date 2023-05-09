@@ -1,0 +1,20 @@
+{
+  "short_name": "upupMan",
+  "name": "UPUP 舉牌加油小人產生器",
+  "icons": [
+    {
+      "src": "materials/fav.ico",
+      "sizes": "32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "materials/favicon.png",
+      "type": "image/png",
+      "sizes": "300x300 512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

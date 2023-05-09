@@ -1,0 +1,157 @@
+
+@font-face {
+  font-family: 'Conv_ITC Avant Garde Gothic LT Bold';
+  src: url('fonts/ITC Avant Garde Gothic LT Bold.eot');
+  src: local('☺'), 
+    url('fonts/ITC Avant Garde Gothic LT Bold.woff2') format('woff2'),
+    url('fonts/ITC Avant Garde Gothic LT Bold.woff') format('woff'),
+    url('fonts/ITC Avant Garde Gothic LT Bold.ttf') format('truetype'),
+    url('fonts/ITC Avant Garde Gothic LT Bold.svg') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body * {
+  font-family: 'Conv_ITC Avant Garde Gothic LT Bold', 'Arial Black', helvetica, arial, sans-serif;
+}
+.stripe-bg {
+  background-image:
+    repeating-linear-gradient(-45deg, transparent 1.5px, rgba(128, 128, 128, .25) 2px 4px, transparent 4.5px 6px);
+}
+
+body { display: flex; }
+aside {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background-color: #ee9a00;
+  padding: 2ex 2ch;
+  border-right: 6px #000 solid;
+  min-width: min-content;
+  width: 38.2vw;
+  overflow: auto;
+  /* overflow: overlay; */
+  /* display: grid; */
+  text-align: center;
+}
+main {
+  /* max-width: max(980px, 61.8vw); */
+  width: 61.8vw;
+  height: 100vh;
+  padding: 2ex 2ch;
+  overflow: auto;
+  overflow: overlay;
+  flex-grow: 1;
+  text-align: center;
+  line-height: calc(100vh - 4ex);
+}
+
+[class|="sect"] {
+  margin: 10px 0;
+}
+
+.logo {
+  word-break: keep-all;
+  white-space: pre;
+  user-select: none;
+}
+.logo span {
+  border: 5px #000 solid;
+  border-radius: 5px;
+  background: #FFF100;
+  --size: 4.9rem;
+  font-size: var(--size);
+  font-family: 'Conv_ITC Avant Garde Gothic LT Bold', 'Arial Black', 'Arial';
+  padding: 0 10px;
+  line-height: var(--size);
+  display: inline-block;
+}
+
+fieldset {
+  padding-top: 10px;
+  border: 0;
+  border-top: 4px #371b0c dashed;
+}
+legend {
+  padding: 0 .5ex;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+textarea {
+  border-radius: 0;
+  border: 6px solid #000;
+  /* width: 278px; */
+  width: 306px;
+  height: 120px;
+  font-size: 20px;
+  padding: 10px;
+}
+
+.sect-bg-color {
+  font-weight: bold;
+  font-size: 18px;
+}
+.bg-block {
+  border: 6px solid #000;
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 6px;
+}
+input.bg-block[type=color] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+::-webkit-color-swatch-wrapper { padding: 0; }
+::-webkit-color-swatch { border: 0; border-radius: 0; }
+::-moz-color-swatch, ::-moz-focus-inner { border: 0; }
+::-moz-focus-inner { padding: 0; }
+
+.btn-sharp {
+  border: 6px solid #000;
+  text-decoration: none;
+  padding: 2px 2px 1px;
+  display: inline-block;
+  vertical-align: baseline;
+  line-height: 1em;
+  color: #000;
+  background: #FFF000;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+input[type=number] {
+  border: 6px solid #000;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 2px 2px 1px;
+  width: 7ch;
+}
+
+table {
+  margin: auto;
+}
+table td {
+  text-align: start;
+}
+table td:first-child {
+  text-align: end;
+}
+input[type=range].pui {
+  box-sizing: initial;
+  --bcolor: #000;
+}
+
+.btn { cursor: pointer; }
+
+canvas {
+  border: 6px #fff solid;
+  border-image: repeating-linear-gradient(45deg, transparent 1.5px, rgba(128, 128, 128, .25) 2px 4px, transparent 4.5px 6px) 6/6px;
+  box-sizing: content-box;
+  vertical-align: middle;
+}
