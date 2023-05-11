@@ -33,6 +33,8 @@ class UpupMan {
       gapX: -48, gapY: -146,
       rotate: deg2rad(-23.5),
       shear: -.585,
+
+      defaultFontColor: "#40210f",
     };
   };
   dimensions = this.defaultDim;
@@ -87,7 +89,7 @@ class UpupMan {
           color: ({
             "♥": "#ca2626",
             "❤": "#d92b6d",
-          })[ch] || "#40210f",
+          })[ch] || this.dimensions.defaultFontColor,
         };
       }
     }
@@ -213,6 +215,7 @@ class UpupMan {
 function setLang(lang) {
   let i = {
       "en": {
+        info: `Materials and copyright belong to <a href="https://www.haniboi.com/">Haniboi</a>. The <a href="http://upuptoyou.com/">original web page</a> is no longer valid, this project provides more customization options.`,
         your_message_here: "YOUR MESSAGE HERE",
         background_colors: "BACKGROUND COLORS",
         facebook_cover: "FACEBOOK COVER",
@@ -226,6 +229,7 @@ function setLang(lang) {
         msg_placeholder: "Write a message... lay it out with spaces, and newlines!",
       },
       "zh-CN": {
+        info: `素材和版权归都于 <a href="https://www.haniboi.com/">Haniboi</a>。<a href="http://upuptoyou.com/">原网址</a>已失效，本项目提供更多的自定义选项。`,
         your_message_here: "写些想说的话",
         background_colors: "背景颜色",
         custom_bg_color: "自定义",
@@ -239,6 +243,7 @@ function setLang(lang) {
         msg_placeholder: "写些想说的话……用空格、换行来布局！",
       },
       "zh-TW": {
+        info: `素材和版權歸都於 <a href="https://www.haniboi.com/">Haniboi</a>。 <a href="http://upuptoyou.com/">原網址</a>已失效，本項目提供更多的客制化選項。`,
         your_message_here: "寫些想說的話",
         background_colors: "背景顏色",
         facebook_cover: "臉書封面",
@@ -251,6 +256,7 @@ function setLang(lang) {
         msg_placeholder: "寫些想說的話……用空白、斷行排列小人！",
       },
       "ja": {
+        info: `素材および著作権は<a href="https://www.haniboi.com/">Haniboi</a>に帰属します。 <a href="http://upuptoyou.com/">元の Web ページ</a>は有効ではなくなりました。このプロジェクトは、より多くのカスタマイズ オプションを提供します。`,
         your_message_here: "何か書く",
         background_colors: "背景色",
         facebook_cover: "フェイスブックカバー",
@@ -275,11 +281,15 @@ window.onload = async () => {
   const upupMan = new UpupMan(document.querySelector("canvas"));
   document.querySelectorAll("[data-color]").forEach(a => {
     const { color } = a.dataset;
-    a.style.backgroundColor = color === "transparent"? "#FFF": color;
+    // a.style.backgroundColor = color === "transparent"? "#FFF": color;
+    a.style.setProperty("--bg-color", color === "transparent"? "#FFF": color);
     a.addEventListener("click", () => {
       upupMan.setBackgroundColor(color);
     });
   });
+  document.querySelector("input[type=color].bg-block").addEventListener("click", e => {
+    upupMan.setBackgroundColor(e.target.value);
+  })
   document.querySelector("input[type=color].bg-block").addEventListener("input", e => {
     upupMan.setBackgroundColor(e.target.value);
   });
@@ -287,7 +297,8 @@ window.onload = async () => {
     upupMan.reGenImg();
   });
   document.querySelectorAll("input[type=range]").forEach((input, i) => {
-    let id = input.id, span = document.querySelectorAll("input[type=range] + span")[i];
+    let id = input.id;
+    let span = input.parentElement.nextElementSibling.firstElementChild;
     span.innerHTML = input.value = upupMan.dimensions[id] * (id === "rotate"? 180 / Math.PI: 1);
     input.addEventListener("input", () => {
       upupMan.updateDim({ [id]: input.value * (id === "rotate"? Math.PI / 180: 1) });
@@ -308,6 +319,12 @@ window.onload = async () => {
         upupMan.setSize(ele.dataset.size);
     });
   });
+  for (let id of ["sizeW", "sizeH"])
+    document.getElementById(id).addEventListener("input", e => {
+      if (upupMan.sizeType !== "custom" || Number.isNaN(+e.target.value))
+        return;
+      upupMan.setSize("custom", +document.getElementById("sizeW").value, +document.getElementById("sizeH").value);
+    });
   await upupMan.preloadRes();
   upupMan.render();
 

@@ -9,7 +9,7 @@
   <link href="materials/fav.ico" rel="icon" />
   <link rel="apple-touch-icon" href="materials/favicon.png" />
   <link rel="manifest" href="manifest.json" />
-  <!-- <link href="https://jerrychan7.github.io/webPixelUIengine/release/all.css" rel="stylesheet" /> -->
+  <link href="https://jerrychan7.github.io/webPixelUIengine/release/all.css" rel="stylesheet" />
   <!-- <link href="-all.css" rel="stylesheet" /> -->
   <link href="index.css" rel="stylesheet" />
   <script src="index.js" type="module"></script>
@@ -18,41 +18,50 @@
   <aside>
     <h1 class="sect-logo logo"><span>UP</span> <span>UP</span></h1>
     <div class="sect-info">
-      <select id="lang-selector">
+      <select id="lang-selector" class="pui" bsize="2">
         <option value="en" selected>English</option>
         <option value="zh-CN">简体中文</option>
         <option value="zh-TW">繁體中文</option>
         <option value="ja">日本語</option>
       </select><br/>
-      版权归于 Haniboi。原网址已失效，本项目提供更多的定制选项。
+      <p data-lang="info">Materials and copyright belong to <a href="https://www.haniboi.com/">Haniboi</a>. The <a href="http://upuptoyou.com/">original web page</a> is no longer valid, this project provides more customization options.</p>
     </div>
     <fieldset class="sect-msg">
       <legend data-lang="your_message_here">YOUR MESSAGE HERE</legend>
-      <textarea id="words" data-lang="msg_placeholder" placeholder="Write a message... lay it out with spaces, and newlines!"></textarea>
+      <textarea class="pui" bsize="2" id="words" data-lang="msg_placeholder" placeholder="Write a message... lay it out with spaces, and newlines!"></textarea>
       <!-- 排列方式：从左到右，从上到下。 -->
       <br/>
       <img class="btn" id="btn-refresh" src="materials/refresh.png" alt="refresh" title="regenerate"/>
     </fieldset>
     <fieldset class="sect-bg-color">
       <legend data-lang="background_colors">BACKGROUND COLORS</legend>
-      <a data-color="transparent" class="bg-block stripe-bg"></a>
-      <a data-color="#FFFFFF" class="bg-block"></a>
-      <a data-color="#E50012" class="bg-block"></a>
-      <a data-color="#EA5415" class="bg-block"></a>
-      <a data-color="#f49ec0" class="bg-block"></a>
-      <a data-color="#f6f08b" class="bg-block"></a>
-      <a data-color="#FFFF99" class="bg-block"></a>
-      <a data-color="#c1d540" class="bg-block"></a>
-      <a data-color="#60c3ba" class="bg-block"></a>
-      <a data-color="#77cff0" class="bg-block"></a>
-      <a data-color="#980c7e" class="bg-block"></a><br />
-      <label data-lang="custom_bg_color">CUSTOM:</label> <input type="color" class="bg-block" />
+      <a data-color="transparent" class="bg-block stripe-bg pui-btn" size="1"></a>
+      <a data-color="#FFFFFF" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#E50012" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#EA5415" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#f49ec0" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#f6f08b" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#FFFF99" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#c1d540" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#60c3ba" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#77cff0" class="bg-block pui-btn" size="1"></a>
+      <a data-color="#980c7e" class="bg-block pui-btn" size="1"></a>
+      <br />
+      <label data-lang="custom_bg_color">CUSTOM:</label> <input type="color" class="bg-block pui" value="#008888" size="1" />
     </fieldset>
     <fieldset class="sect-size">
       <legend class="inline" data-lang="size">SIZE</legend>
-      <a class="btn-sharp" data-size="facebook_cover" data-lang="facebook_cover">FACEBOOK COVER</a>
-      <a class="btn-sharp" data-size="square" data-lang="square">SQUARE</a>
-      <a class="btn-sharp" data-size="auto" data-lang="auto_size">AUTO</a>
+      <div class="radio-group">
+        <label><input type="radio" class="pui triangle" name="size" />
+          <span data-size="facebook_cover" data-lang="facebook_cover">FACEBOOK COVER</span></label><br />
+        <label><input type="radio" class="pui triangle" name="size" />
+          <span data-size="square" data-lang="square">SQUARE</span><br /></label>
+        <label><input type="radio" class="pui triangle" name="size" checked />
+          <span data-size="auto" data-lang="auto_size">AUTO</span><br /></label>
+        <label><input type="radio" class="pui triangle" name="size" />
+          <span data-size="custom" data-lang="custom_size">CUSTOM</span>
+          <span><input type="number" id="sizeW" class="pui" bsize="1"> W × <input type="number" id="sizeH" class="pui" bsize="1"> H</span></label>
+      </div>
       <!-- <br/>
       <a class="btn-sharp" data-size="custom" data-lang="custom_size">CUSTOM</a>
       <span><input type="number" id="sizeW"> W × <input type="number" id="sizeH"> H</span> -->
@@ -63,186 +72,49 @@
     <div class="sth" style="display: none;">
       <a id="download" class="button green" download="upup.jpg" target="_blank" data-lang="download_this_pic">DOWNLOAD THIS PIC</a>
     </div>
-    <!-- <fieldset class="sect-ranges">
+    <fieldset class="sect-layout">
       <table>
-        <tr><td>rotate:</td><td><input class="pui hollow success" bsize="2" type="range" min="-90" max="0" value="-23.5" step="0.5" id="rotate"/> <span></span></td></tr>
-        <tr><td>gapX:</td><td><input class="pui hollow success" bsize="2" type="range" min="-300" max="300" value="0" step="1" id="gapX"/> <span></span></td></tr>
-        <tr><td>gapY:</td><td><input class="pui hollow success" bsize="2" type="range" min="-300" max="300" value="0" step="1" id="gapY"/> <span></span></td></tr>
-        <tr><td>shear:</td><td><input class="pui hollow success" bsize="2" type="range" min="-5" max="5" value="-0.585" step="0.005" id="shear"/> <span></span></td></tr>
+        <tr>
+          <td>rotate:</td>
+          <td><input class="pui hollow success" bsize="2" type="range" min="-90" max="0" value="-23.5" step="0.5" id="rotate"/></td>
+          <td><span></span></td>
+        </tr>
+        <tr>
+          <td>gapX:</td>
+          <td><input class="pui hollow success" bsize="2" type="range" min="-300" max="300" value="0" step="1" id="gapX"/></td>
+          <td><span></span></td>
+        </tr>
+        <tr>
+          <td>gapY:</td>
+          <td><input class="pui hollow success" bsize="2" type="range" min="-300" max="300" value="0" step="1" id="gapY"/></td>
+          <td><span></span></td>
+        </tr>
+        <tr>
+          <td>shear:</td>
+          <td><input class="pui hollow success" bsize="2" type="range" min="-5" max="5" value="-0.585" step="0.005" id="shear"/></td>
+          <td><span></span></td>
+        </tr>
+        <!-- <tr>
+          <td>offsetX:</td>
+          <td><input class="pui hollow success" bsize="2" type="range" min="-5" max="5" value="-0.585" step="0.005" id="offsetX"/></td>
+          <td><span></span></td>
+        </tr>
+        <tr>
+          <td>offsetY:</td>
+          <td><input class="pui hollow success" bsize="2" type="range" min="-5" max="5" value="-0.585" step="0.005" id="offsetY"/></td>
+          <td><span></span></td>
+        </tr> -->
       </table>
-    </fieldset> -->
+    </fieldset>
+    <footer>
+      Copyright © <a href="https://www.haniboi.com/">Haniboi Ltd.</a><br />
+      Author of this page jerrychan7@github.
+    </footer>
   </aside>
   <main class="stripe-bg">
     <img id="output" style="display: none;" />
     <canvas></canvas>
   </main>
   <!-- size: auto cover square 自定义 -->
-  <!-- <script type="module">
-    let bgColor = "transparent";
-    document.querySelectorAll("[data-color]").forEach(a => {
-      const { color } = a.dataset;
-      a.style.backgroundColor = color === "transparent"? "#FFF": color;
-      a.addEventListener("click", () => {
-        bgColor = color;
-        setasdf();
-      });
-    });
-    document.getElementById("btn-refresh").addEventListener("click", e => {
-      setasdf();
-    });
-    document.querySelector("input[type=color].bg-block").addEventListener("input", e => {
-      bgColor = e.target.value;
-      setasdf();
-    });
-    const loadImg = (url, x, y) => new Promise((res, rej) => {
-      let img = new Image(x, y);
-      img.onload = () => res(img);
-      img.onerror = err => rej(err);
-      img.src = url;
-    });
-    let allImg = await loadImg("materials/sprites.webp", 3366, 199);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = 102;
-    canvas.height = 199;
-    let imgs = [];
-    let promises = [];
-    for (let i = 0; i < 33; ++i) {
-      ctx.clearRect(0, 0, 102, 199);
-      ctx.drawImage(allImg, i * 102, 0, 102, 199, 0, 0, 102, 199);
-      promises.push(loadImg(canvas.toDataURL(), 102, 199).then(img => imgs[i] = img));
-    }
-    await Promise.allSettled(promises);
-    let fontFace = new FontFace("Conv_ITC Avant Garde Gothic LT Bold", "local('☺'), url('fonts/ITC Avant Garde Gothic LT Bold.woff2') format('woff2'), url('fonts/ITC Avant Garde Gothic LT Bold.woff') format('woff'), url('fonts/ITC Avant Garde Gothic LT Bold.ttf') format('truetype'), url('fonts/ITC Avant Garde Gothic LT Bold.svg') format('svg')", {
-      weight: "normal",
-      style: "normal",
-    });
-    document.fonts.add(fontFace);
-    await fontFace.load();
-
-    window.asdf = {
-      scaleX: 1.3, scaleY: 1,
-      skewH: .635, skewV: -1.5,
-      // moveX: 191, moveY: 32,
-      moveX: 35.5, moveY: 41.1,
-      fontSizeZh: 26,
-      fontSizeEn: 32,
-
-      gapX: -48, gapY: -146,
-      rotate: -23.5 * Math.PI / 180,
-      shear: -.585,
-    };
-    window.setasdf = ({
-      scaleX = window.asdf.scaleX,
-      scaleY = window.asdf.scaleY,
-      skewH = window.asdf.skewH,
-      skewV = window.asdf.skewV,
-      moveX = window.asdf.moveX,
-      moveY = window.asdf.moveY,
-      fontSizeZh = window.asdf.fontSizeZh,
-      fontSizeEn = window.asdf.fontSizeEn,
-      gapX = window.asdf.gapX,
-      gapY = window.asdf.gapY,
-      rotate = window.asdf.rotate,
-      shear = window.asdf.shear,
-    } = window.asdf) => {
-      window.asdf.scaleX = scaleX;
-      window.asdf.scaleY = scaleY;
-      window.asdf.skewH = skewH;
-      window.asdf.skewV = skewV;
-      window.asdf.moveX = moveX;
-      window.asdf.moveY = moveY;
-      window.asdf.fontSizeZh = fontSizeZh;
-      window.asdf.fontSizeEn = fontSizeEn;
-      window.asdf.gapX = gapX;
-      window.asdf.gapY = gapY;
-      window.asdf.rotate = rotate;
-      window.asdf.shear = shear;
-      // console.log(asdf);
-      // document.querySelectorAll("canvas:not(:first-child)").forEach(c => c.remove());
-//       draw(`abcdefghijklmnopqrstuvwxyz
-// ♥❤|_abcdefghijklmnopqrstuv
-// 干饭 不积极abcdefghijklmnopqrst
-// 思想 有问题abcdefghijklmnopqrst
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz
-// abcdefghijklmnopqrstuvwxyz`);
-//       draw(`干饭 不积极
-// 思想 有问题`);
-      draw(`干思 
-饭想
-
-不有
-积问
-极题`);
-    };
-
-    window.setasdf();
-    document.querySelectorAll("input[type=range]").forEach((input, i) => {
-      let id = input.id, span = document.querySelectorAll("input[type=range] + span")[i];
-      span.innerHTML = input.value = asdf[id] * (id === "rotate"? 180 / Math.PI: 1);
-      input.addEventListener("input", () => {
-        window.setasdf({ [id]: input.value * (id === "rotate"? Math.PI / 180: 1) });
-        span.innerHTML = input.value;
-      });
-    });
-
-    function draw(text = "") {
-      text = text.toLocaleUpperCase();
-      // [min, max)
-      const getRandomInt = (min = 1, max = 33) => Math.floor(Math.random() * (max - min) + min);
-      const canvas = document.querySelector("canvas");
-      canvas.width = canvas.height = 1000;
-      const ctx = canvas.getContext("2d");
-      // ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // ctx.fillStyle = "#FFFF99";
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      text.split("\n").reduce((len, line, i) => {
-        line.split("").forEach((ch, j) => {
-          if (ch === " ") return;
-          let man = imgs[ch === " "? 0: getRandomInt()];
-          let x = j * (102 + window.asdf.gapX), y = i * (199 + window.asdf.gapY);
-          x = x + window.asdf.shear * y;
-          let s = Math.sin(window.asdf.rotate), c = Math.cos(window.asdf.rotate);
-          let dx = 500, dy = 300;
-          let py = (y * c - x * s) + dy, px = (x * c + y * s) + dx;
-          ctx.drawImage(man, px, py);
-
-          ctx.save();
-          ctx.fillStyle = ({
-            "♥": "#ca2626",
-            "❤": "#d92b6d",
-          })[ch] || "#40210f";
-          ctx.textAlign = "center";
-          if (encodeURIComponent(ch).length > 1)
-            ctx.font = "900 " + window.asdf.fontSizeZh + "px 'LiHei Pro','微軟正黑體','Microsoft JhengHei'";
-          else ctx.font = "bold " + window.asdf.fontSizeEn + "px 'Conv_ITC Avant Garde Gothic LT Bold','Arial Black', 'Arial'";
-          ctx.imageSmoothingEnabled = false;
-          ctx.setTransform(1, 0, 0, 1, px, py);
-          ctx.transform(
-            window.asdf.scaleX, window.asdf.skewH, window.asdf.skewV,
-            window.asdf.scaleY, window.asdf.moveX, window.asdf.moveY
-          );
-          ctx.rotate(-3 * Math.PI / 180);
-          ctx.fillText(ch, 0, 0);
-          ctx.restore();
-        });
-        return len + line.length;
-      }, 0);
-    }
-  </script> -->
 </body>
 </html>

@@ -16,7 +16,7 @@ body * {
 }
 .stripe-bg {
   background-image:
-    repeating-linear-gradient(-45deg, transparent 1.5px, rgba(128, 128, 128, .25) 2px 4px, transparent 4.5px 6px);
+    repeating-linear-gradient(-45deg, transparent 1.75px, rgba(128, 128, 128, .25) 2.25px 3.75px, transparent 4.25px 6px);
 }
 
 body { display: flex; }
@@ -67,6 +67,10 @@ main {
   display: inline-block;
 }
 
+#lang-selector {
+  margin-bottom: 10px;
+}
+
 fieldset {
   padding-top: 10px;
   border: 0;
@@ -78,10 +82,9 @@ legend {
   font-weight: bold;
 }
 
-textarea {
+textarea.pui {
   border-radius: 0;
-  border: 6px solid #000;
-  /* width: 278px; */
+  --bwidth: 4px;
   width: 306px;
   height: 120px;
   font-size: 20px;
@@ -93,42 +96,39 @@ textarea {
   font-size: 18px;
 }
 .bg-block {
-  border: 6px solid #000;
   cursor: pointer;
   display: inline-block;
   vertical-align: middle;
   width: 32px;
   height: 32px;
   margin-bottom: 6px;
+  --inset-color: transparent;
+  filter: drop-shadow(0 0 5px rgb(0 0 0/.5));
+  transition: all 40ms ease;
+  user-select: none;
 }
-input.bg-block[type=color] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+.bg-block:hover {
+  filter: drop-shadow(0 0 7px rgb(0 0 0/.75));
+  scale: 1.05;
 }
-::-webkit-color-swatch-wrapper { padding: 0; }
-::-webkit-color-swatch { border: 0; border-radius: 0; }
-::-moz-color-swatch, ::-moz-focus-inner { border: 0; }
-::-moz-focus-inner { padding: 0; }
+.bg-block:active {
+  filter: drop-shadow(0 0 2px rgb(0 0 0/.5));
+  scale: .95;
+}
 
-.btn-sharp {
-  border: 6px solid #000;
-  text-decoration: none;
-  padding: 2px 2px 1px;
+.sect-size > .radio-group {
   display: inline-block;
-  vertical-align: baseline;
-  line-height: 1em;
-  color: #000;
-  background: #FFF000;
+  text-align: start;
+  --mark: '-';
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 6px;
-  cursor: pointer;
 }
-input[type=number] {
-  border: 6px solid #000;
-  font-size: 18px;
-  font-weight: bold;
+.sect-size > .radio-group label { cursor: pointer; }
+.sect-size > .radio-group input[type='radio'] {
+  cursor: pointer;
+  vertical-align: middle;
+}
+.sect-size > .radio-group input[type=number] {
   padding: 2px 2px 1px;
   width: 7ch;
 }
@@ -138,9 +138,15 @@ table {
 }
 table td {
   text-align: start;
+  vertical-align: middle;
+  padding-right: 1ex;
 }
 table td:first-child {
   text-align: end;
+}
+table td:last-child {
+  width: 8ch;
+  padding-right: 0;
 }
 input[type=range].pui {
   box-sizing: initial;
@@ -151,7 +157,7 @@ input[type=range].pui {
 
 canvas {
   border: 6px #fff solid;
-  border-image: repeating-linear-gradient(45deg, transparent 1.5px, rgba(128, 128, 128, .25) 2px 4px, transparent 4.5px 6px) 6/6px;
+  border-image: repeating-linear-gradient(45deg, transparent 1.75px, rgba(128, 128, 128, .25) 2.25px 3.75px, transparent 4.25px 6px) 6/6px;
   box-sizing: content-box;
   vertical-align: middle;
 }
