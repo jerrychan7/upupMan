@@ -23,16 +23,18 @@ class UpupMan {
   bgColor = "transparent";
   get defaultDim() {
     return {
+      // for text
       scaleX: 1.3, scaleY: 1,
       skewH: .635, skewV: -1.5,
       moveX: 35.5, moveY: 41.1,
-
-      offsetX: 500, offsetY: 300,
       fontSizeZh: 26,
       fontSizeEn: 32,
+
+      offsetX: 500, offsetY: 300,
       gapX: -48, gapY: -146,
       rotate: deg2rad(-23.5),
       shear: -.585,
+      zoom: 1,
 
       defaultFontColor: "#40210f",
     };
@@ -137,12 +139,14 @@ class UpupMan {
         }
         // console.log({minX, maxX, minY, maxY, w, h, zeroCount})
       }
+      w *= dimensions.zoom;
+      h *= dimensions.zoom;
       dimensions.offsetY = Math.max(0, Math.abs(minY));
       dimensions.offsetX = Math.max(0, Math.abs(minX));
       if (sizeType === "square") {
         size.width = size.height = Math.max(w, h);
-        if (w > h) dimensions.offsetY += (w - h) / 2;
-        else dimensions.offsetX += (h - w) / 2;
+        if (w > h) dimensions.offsetY += (w - h) / 2 / dimensions.zoom;
+        else dimensions.offsetX += (h - w) / 2 / dimensions.zoom;
       }
       else {
         size.width = w;
@@ -154,6 +158,7 @@ class UpupMan {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dimensions.zoom, 0, 0, dimensions.zoom, 0, 0);
 
     words.forEach((line, i) => {
       line.forEach(({ ch, img, color }, j) => {
@@ -172,7 +177,8 @@ class UpupMan {
           ctx.font = "900 " + dimensions.fontSizeZh + "px 'LiHei Pro','微軟正黑體','Microsoft JhengHei'";
         else ctx.font = "bold " + dimensions.fontSizeEn + "px 'Conv_ITC Avant Garde Gothic LT Bold','Arial Black', 'Arial'";
         ctx.imageSmoothingEnabled = false;
-        ctx.setTransform(1, 0, 0, 1, px, py);
+        ctx.setTransform(dimensions.zoom, 0, 0, dimensions.zoom, 0, 0);
+        ctx.translate(px, py);
         ctx.transform(
           dimensions.scaleX, dimensions.skewH, dimensions.skewV,
           dimensions.scaleY, dimensions.moveX, dimensions.moveY
