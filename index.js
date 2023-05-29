@@ -97,64 +97,88 @@ class UpupMan {
     }
     this.render();
   };
-  render() {
-    const { canvas, ctx, bgColor, words, dimensions, size, sizeType } = this;
-    const isAutoSize = sizeType === "auto" || sizeType === "square";
-    const getImgPos = (
-      lineIdx, chIdx,
-      offsetX = dimensions.offsetX,
-      offsetY = dimensions.offsetY
-    ) => {
-      const { gapY, gapX, shear, rotate } = dimensions;
-      let y = lineIdx * (imgH + gapY),
-          x = chIdx * (imgW + gapX) + shear * y,
-          s = Math.sin(rotate),
-          c = Math.cos(rotate),
-          py = (y * c - x * s) + offsetY,
-          px = (y * s + x * c) + offsetX;
-      return [~~px, ~~py];
-    };
-
-    if (isAutoSize) {
-      // set canvas size ans offset
-      let minX, maxX, minY, maxY, w = 100, h = 100;
-      if (words.length !== 0) {
-        minX = minY = Number.MAX_VALUE;
-        maxX = maxY = Number.MIN_VALUE;
-        let zeroCount = 0;
-        words.forEach((line, i) => {
-          zeroCount += line.length === 0;
-          line.forEach((info, j) => {
-            let [x, y] = getImgPos(i, j, 0, 0);
-            // console.log(info.ch, i, j, x, y)
-            if (minX > x) minX = x;
-            if (maxX < x) maxX = x;
-            if (minY > y) minY = y;
-            if (maxY < y) maxY = y;
-          });
+  getImgPos = (lineIdx, chIdx, offsetX = this.dimensions.offsetX, offsetY = this.dimensions.offsetY) => {
+    const { gapY, gapX, shear, rotate } = this.dimensions;
+    // console.log(offsetX, offsetY);
+    let y = lineIdx * (imgH + gapY),
+        x = chIdx * (imgW + gapX) + shear * y,
+        s = Math.sin(rotate),
+        c = Math.cos(rotate),
+        py = (y * c - x * s) + offsetY,
+        px = (y * s + x * c) + offsetX;
+    return [~~px, ~~py];
+  };
+  echoSize(w, h) {
+    [...document.getElementsByClassName("squareSizeEcho")].forEach(e => e.innerHTML = Math.max(w, h));
+    document.getElementById("autoSizeEchoW").innerHTML = w;
+    document.getElementById("autoSizeEchoH").innerHTML = h;
+  };
+  calcSize() {
+    const { words, getImgPos, dimensions } = this;
+    let minX = 50, maxX, minY = 50, maxY, w = 100, h = 100;
+    if (words.length !== 0) {
+      minX = minY = Number.MAX_VALUE;
+      maxX = maxY = Number.MIN_VALUE;
+      let zeroCount = 0;
+      words.forEach((line, i) => {
+        zeroCount += line.length === 0;
+        line.forEach((info, j) => {
+          let [x, y] = getImgPos(i, j, 0, 0);
+          // console.log(info.ch, i, j, x, y)
+          if (minX > x) minX = x;
+          if (maxX < x) maxX = x;
+          if (minY > y) minY = y;
+          if (maxY < y) maxY = y;
         });
-        if (zeroCount !== words.length) {
-          w = maxX - minX + imgW;
-          h = maxY - minY + imgH;
-        }
-        // console.log({minX, maxX, minY, maxY, w, h, zeroCount})
+      });
+      if (zeroCount !== words.length) {
+        w = maxX - minX + imgW;
+        h = maxY - minY + imgH;
       }
-      w *= dimensions.zoom;
-      h *= dimensions.zoom;
-      dimensions.offsetY = Math.max(0, Math.abs(minY));
-      dimensions.offsetX = Math.max(0, Math.abs(minX));
+      // console.log({minX, maxX, minY, maxY, w, h, zeroCount})
+    }
+    w = Math.ceil(w * dimensions.zoom);
+    h = Math.ceil(h * dimensions.zoom);
+    return {w, h, minX, minY};
+  };
+  calcSizeAndEcho() {
+    let {w, h, minX, minY} = this.calcSize();
+    this.echoSize(w, h);
+    return {w, h, minX, minY};
+  };
+  calcOffsetAndSize({w, h, minX, minY} = this.calcSize(), sizeType = this.sizeType) {
+    minY = Math.max(0, Math.abs(minY));
+    minX = Math.max(0, Math.abs(minX));
+    const isAutoSize = sizeType === "auto" || sizeType === "square";
+    const ans = {
+      offsetY: this.dimensions.offsetY,
+      offsetX: this.dimensions.offsetX,
+      width: this.size.width,
+      height: this.size.height,
+      isAutoSize,
+    };
+    if (isAutoSize) {
+      [ans.offsetY, ans.offsetX, ans.width, ans.height] = [minY, minX, w, h];
       if (sizeType === "square") {
-        size.width = size.height = Math.max(w, h);
-        if (w > h) dimensions.offsetY += (w - h) / 2 / dimensions.zoom;
-        else dimensions.offsetX += (h - w) / 2 / dimensions.zoom;
-      }
-      else {
-        size.width = w;
-        size.height = h;
+        ans.width = ans.height = Math.max(w, h);
+        if (w > h) ans.offsetY += (w - h) / 2 / this.dimensions.zoom;
+        else ans.offsetX += (h - w) / 2 / this.dimensions.zoom;
       }
     }
-    canvas.width = size.width;
-    canvas.height = size.height;
+    return ans;
+  };
+  updateOffsetAndSize({offsetX, offsetY, width, height} = this.calcOffsetAndSize()) {
+    this.dimensions.offsetX = offsetX;
+    this.dimensions.offsetY = offsetY;
+    this.size.width = width;
+    this.size.height = height;
+  };
+  render() {
+    const { canvas, ctx, bgColor, words, dimensions, size, getImgPos } = this;
+
+    this.updateOffsetAndSize(this.calcOffsetAndSize(this.calcSizeAndEcho()));
+    canvas.width = Math.ceil(size.width);
+    canvas.height = Math.ceil(size.height);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -165,6 +189,8 @@ class UpupMan {
         if (ch === " ") return;
 
         // draw img
+        // p' = p * shear * rotate * offset * zoom
+        // 其中 zoom 由 ctx 的矩阵完成
         const [px, py] = getImgPos(i, j);
         ctx.drawImage(img, px, py);
 
@@ -221,6 +247,7 @@ class UpupMan {
 function setLang(lang) {
   let i = {
       "en": {
+        title: "UPUP to You",
         info: `Materials and copyright belong to <a href="https://www.haniboi.com/">Haniboi</a>. The <a href="http://upuptoyou.com/">original web page</a> is no longer valid, this project provides more customization options.`,
         your_message_here: "YOUR MESSAGE HERE",
         background_colors: "BACKGROUND COLORS",
@@ -235,6 +262,7 @@ function setLang(lang) {
         msg_placeholder: "Write a message... lay it out with spaces, and newlines!",
       },
       "zh-CN": {
+        title: "UPUP 举牌加油小人生成器",
         info: `素材和版权归都于 <a href="https://www.haniboi.com/">Haniboi</a>。<a href="http://upuptoyou.com/">原网址</a>已失效，本项目提供更多的自定义选项。`,
         your_message_here: "写些想说的话",
         background_colors: "背景颜色",
@@ -249,6 +277,7 @@ function setLang(lang) {
         msg_placeholder: "写些想说的话……用空格、换行来布局！",
       },
       "zh-TW": {
+        title: "UPUP 舉牌加油小人產生器",
         info: `素材和版權歸都於 <a href="https://www.haniboi.com/">Haniboi</a>。 <a href="http://upuptoyou.com/">原網址</a>已失效，本項目提供更多的客制化選項。`,
         your_message_here: "寫些想說的話",
         background_colors: "背景顏色",
@@ -262,6 +291,7 @@ function setLang(lang) {
         msg_placeholder: "寫些想說的話……用空白、斷行排列小人！",
       },
       "ja": {
+        title: "UPUP 応援サインジェネレーター",
         info: `素材および著作権は<a href="https://www.haniboi.com/">Haniboi</a>に帰属します。 <a href="http://upuptoyou.com/">元の Web ページ</a>は有効ではなくなりました。このプロジェクトは、より多くのカスタマイズ オプションを提供します。`,
         your_message_here: "何か書く",
         background_colors: "背景色",
@@ -287,7 +317,6 @@ window.onload = async () => {
   const upupMan = new UpupMan(document.querySelector("canvas"));
   document.querySelectorAll("[data-color]").forEach(a => {
     const { color } = a.dataset;
-    // a.style.backgroundColor = color === "transparent"? "#FFF": color;
     a.style.setProperty("--bg-color", color === "transparent"? "#FFF": color);
     a.addEventListener("click", () => {
       upupMan.setBackgroundColor(color);
@@ -325,6 +354,45 @@ window.onload = async () => {
         upupMan.setSize(ele.dataset.size);
     });
   });
+
+  const fbDimInfo = { gapX: -25.594502815569612, gapY: -128, offsetX: 422.73333333333335, offsetY: -6.7457627118644075, rotate: -0.36397895650964407, shear: -0.65, zoom: 0.8859000886786875, };
+  const sqDimInfo = { gapX: -28.686156371459916, gapY: -126.4, offsetX: 228.1578947368421, offsetY: 82.80536912751677, rotate: -0.41450687458478597, shear: -0.615, zoom: 0.7469208789043256, };
+  /*
+    上面的魔法数字的由来
+    原版的有两个预设：脸书封面，以及正方形
+    这两个预设采用的参数：
+      脸书封面：start = { x: 310, y: -30 }, image = { gapX: 63, gapY: 24, w: 90, h: 177 }, linebreak = { x: -60, y: 44 };
+      正方形：start = { x: 120, y: 40 }, image = { gapX: 50, gapY: 22, w: 76, h: 149 }, linebreak = { x: -52, y: 36 };
+    基于公式直接算出画布上的坐标：
+      x = (startX + linebreakX * lineIdx) + gapX * (charIdx + 1);
+      y = (startY + linebreakY * lineIdx) + gapY * (charIdx + 1);
+      ctx.drawImage(img, x, y, image.w, image.h);
+    算了半天，原版的坐标系统和本项目中实现的坐标系统不存在转换公式
+    部分转换关系：
+      const zoomX = image.w / imgW, zoomY = image.h / imgH, zoom = (zoomX + zoomY) / 2;
+      const offsetX = (start.x + image.gapX) / zoomX, offsetY = (start.y + image.gapY) / zoomY;
+      const xtan = Math.atan(image.gapY / image.gapX), rotate = -xtan;
+      const gapX = (image.gapX / Math.cos(xtan)) / zoomX - imgW;
+      // 悟了 这两坐标系统就没有等价转换式 直接手动上近似值得了
+      const gapY = -128, shear = -.65;  // 脸书封面
+      const gapY = -126.4, shear = -.615;   // 正方形
+  */
+  document.querySelectorAll("[data-preset]").forEach(ele => {
+    ele.addEventListener("click", e => {
+      upupMan.updateDim({
+        "compact": {
+          ...upupMan.defaultDim,
+          offsetX: upupMan.dimensions.offsetX,
+          offsetY: upupMan.dimensions.offsetY,
+        },
+        "fb": fbDimInfo,
+        "square": sqDimInfo,
+      }[ele.dataset.preset]);
+      document.querySelectorAll("input[type=range]").forEach((input) => {
+        input.parentElement.nextElementSibling.firstElementChild.innerHTML = (input.value = upupMan.dimensions[input.id] * (input.id === "rotate"? 180 / Math.PI: 1)).toFixed(3);
+      });
+    });
+  });
   for (let id of ["sizeW", "sizeH"])
     document.getElementById(id).addEventListener("input", e => {
       if (upupMan.sizeType !== "custom" || Number.isNaN(+e.target.value))
@@ -334,7 +402,13 @@ window.onload = async () => {
   await upupMan.preloadRes();
   upupMan.render();
 
-  // window.upupMan = upupMan;
+//   window.upupMan = upupMan;
+//   upupMan.setSize("custom", 500, 500);
+//   document.querySelector("[data-preset=square]").click();
+//   upupMan.processWords(document.getElementById("words").value = `abc
+// def
+// ghi`);
+
 //   upupMan.processWords(document.getElementById("words").value = `abcdefghijklmnopqrstuvwxyz
 // ♥❤|_abcdefghijklmnopqrstuv
 // 干饭 不积极abcdefghijklmnopqrst
