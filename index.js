@@ -1,4 +1,14 @@
 
+const SIZE_TYPE = {
+  FACEBOOK_COVER: "facebook_cover",
+  SQUARE: "square",
+  AUTO_SIZE: "auto_size",
+  AUTO_SQUARE: "auto_square",
+  CUSTOM: "custom",
+  IS_AUTO: type => type === SIZE_TYPE.AUTO_SIZE || type === SIZE_TYPE.AUTO_SQUARE,
+};
+Object.freeze(SIZE_TYPE);
+
 const imgW = 102, imgH = 199, imgCount = 33;
 
 const loadFont = async ({ family, src, ...descriptors } = {}) => {
@@ -40,7 +50,7 @@ class UpupMan {
     };
   };
   dimensions = this.defaultDim;
-  sizeType = "auto";
+  sizeType = SIZE_TYPE.AUTO_SIZE;
   size = { width: 100, height: 100 };
   words = [];
   constructor(canvas) {
@@ -53,8 +63,10 @@ class UpupMan {
   };
   setSize(type, width = 100, height = 100) {
     this.sizeType = type;
-    if (type === "facebook_cover")
+    if (type === SIZE_TYPE.FACEBOOK_COVER)
       width = 850, height = 315;
+    else if (type === SIZE_TYPE.SQUARE)
+      width = height = 500;
     this.size = { width, height };
     this.render();
   };
@@ -149,7 +161,7 @@ class UpupMan {
   calcOffsetAndSize({w, h, minX, minY} = this.calcSize(), sizeType = this.sizeType) {
     minY = Math.max(0, Math.abs(minY));
     minX = Math.max(0, Math.abs(minX));
-    const isAutoSize = sizeType === "auto" || sizeType === "square";
+    const isAutoSize = SIZE_TYPE.IS_AUTO(sizeType);
     const ans = {
       offsetY: this.dimensions.offsetY,
       offsetX: this.dimensions.offsetX,
@@ -159,7 +171,7 @@ class UpupMan {
     };
     if (isAutoSize) {
       [ans.offsetY, ans.offsetX, ans.width, ans.height] = [minY, minX, w, h];
-      if (sizeType === "square") {
+      if (sizeType === SIZE_TYPE.AUTO_SQUARE) {
         ans.width = ans.height = Math.max(w, h);
         if (w > h) ans.offsetY += (w - h) / 2 / this.dimensions.zoom;
         else ans.offsetX += (h - w) / 2 / this.dimensions.zoom;
@@ -256,9 +268,17 @@ function setLang(lang) {
         choose_your_team: "CHOOSE YOUR TEAM",
         download_this_pic: "DOWNLOAD THIS PIC",
         size: "SIZE",
+        style: "STYLE",
+        auto_square: "AUTO SQUARE",
         auto_size: "AUTO",
         custom_size: "CUSTOM",
         custom_bg_color: "CUSTOM",
+        adv_settings: "ADVANCED SETTINGS",
+        layout: "LAYOUT",
+        preset: "Preset:",
+        preset_fb_cover: "fb cover",
+        preset_square: "square",
+        preset_compact: "compact",
         msg_placeholder: "Write a message... lay it out with spaces, and newlines!",
       },
       "zh-CN": {
@@ -271,9 +291,17 @@ function setLang(lang) {
         square: "方形",
         download_this_pic: "下载图片",
         size: "大小",
+        style: "样式",
+        auto_square: "自动（方形）",
         auto_size: "自动",
         custom_size: "自定义",
         custom_bg_color: "自定义",
+        adv_settings: "高级设置",
+        layout: "布局",
+        preset: "预设：",
+        preset_fb_cover: "脸书封面",
+        preset_square: "正方形",
+        preset_compact: "紧凑",
         msg_placeholder: "写些想说的话……用空格、换行来布局！",
       },
       "zh-TW": {
@@ -285,9 +313,17 @@ function setLang(lang) {
         square: "方形",
         download_this_pic: "下載圖片",
         size: "大小",
+        style: "樣式",
+        auto_square: "自動（方形）",
         auto_size: "自動",
         custom_size: "自定義",
         custom_bg_color: "自定義",
+        adv_settings: "高級設置",
+        layout: "佈局",
+        preset: "預設：",
+        preset_fb_cover: "臉書封面",
+        preset_square: "正方形",
+        preset_compact: "緊凑",
         msg_placeholder: "寫些想說的話……用空白、斷行排列小人！",
       },
       "ja": {
@@ -299,9 +335,17 @@ function setLang(lang) {
         square: "四角形",
         download_this_pic: "下載圖片",
         size: "サイズ",
+        style: "様式",
+        auto_square: "自動（角型）",
         auto_size: "自動",
         custom_size: "カスタマイズ",
         custom_bg_color: "カスタマイズ",
+        adv_settings: "高度な設定",
+        layout: "レイアウト",
+        preset: "プリセット：",
+        preset_fb_cover: "Facebookのカバー",
+        preset_square: "角型",
+        preset_compact: "コンパクト",
         msg_placeholder: "言いたいことを書いて… 空白と改行で組版！",
       }
   };
@@ -347,12 +391,29 @@ window.onload = async () => {
     upupMan.processWords(e.target.value);
   });
   document.querySelectorAll("[data-size]").forEach(ele => {
-    ele.addEventListener("click", e => {
-      if (ele.dataset.size === "custom")
-        upupMan.setSize("custom", +document.getElementById("sizeW").value, +document.getElementById("sizeH").value);
+    ele.querySelector("input[type=radio]").addEventListener("change", e => {
+      if (ele.dataset.size === SIZE_TYPE.CUSTOM)
+        upupMan.setSize(SIZE_TYPE.CUSTOM, +document.getElementById("sizeW").value, +document.getElementById("sizeH").value);
       else
         upupMan.setSize(ele.dataset.size);
+      document.querySelectorAll("input[id^=offset]").forEach(input => {
+        input.title = (input.disabled = SIZE_TYPE.IS_AUTO(ele.dataset.size))
+          ? "Cannot change at auto size or auto square size"
+          : "";
+      });
     });
+  });
+  document.getElementById("btn-download").addEventListener("click", e => {
+    let url = upupMan.canvas.toDataURL("image/png");
+    if (!navigator.userAgent.match(/(iPad|Android|iPhone|iPod)/g))
+      url = url.replace("image/png", "image/octet-stream");
+    e.target.href = url;
+  });
+  document.getElementById("btn-insert-space").addEventListener("click", () => {
+    const textarea = document.getElementById("words");
+    const [start, end] = [textarea.selectionStart, textarea.selectionEnd];
+    textarea.setRangeText(" ", start, end, start === end? "end": "select");
+    upupMan.processWords(textarea.value);
   });
 
   const fbDimInfo = { gapX: -25.594502815569612, gapY: -128, offsetX: 422.73333333333335, offsetY: -6.7457627118644075, rotate: -0.36397895650964407, shear: -0.65, zoom: 0.8859000886786875, };
@@ -395,12 +456,36 @@ window.onload = async () => {
   });
   for (let id of ["sizeW", "sizeH"])
     document.getElementById(id).addEventListener("input", e => {
-      if (upupMan.sizeType !== "custom" || Number.isNaN(+e.target.value))
+      if (upupMan.sizeType !== SIZE_TYPE.CUSTOM || Number.isNaN(+e.target.value))
         return;
-      upupMan.setSize("custom", +document.getElementById("sizeW").value, +document.getElementById("sizeH").value);
+      upupMan.setSize(SIZE_TYPE.CUSTOM, +document.getElementById("sizeW").value, +document.getElementById("sizeH").value);
     });
+  document.querySelectorAll(".sect-style button").forEach(btn => {
+    btn.addEventListener("click", e => {
+      document.querySelector(`[data-size='${btn.dataset.lang}'`).click();
+      if (btn.dataset.lang === "facebook_cover")
+        document.querySelector("[data-preset='fb']").click();
+      else document.querySelector("[data-preset='square']").click();
+    });
+  });
+  const toggleTri = (details, tri) =>
+    tri.forEach(details.open? t => {
+      t.classList.remove("left", "right");
+      t.classList.add("down");
+    }: (t, i) => {
+      t.classList.remove("down");
+      t.classList.add(["right", "left"][i]);
+    });
+  document.querySelectorAll("summary").forEach(summary => {
+    let tri = summary.querySelectorAll(".pui-icon.triangle");
+    if (tri.length === 0) return;
+    const details = summary.parentElement;
+    toggleTri(details, tri);
+    details.addEventListener("toggle", () => toggleTri(details, tri));
+  });
   await upupMan.preloadRes();
-  upupMan.render();
+  document.querySelector(".sect-style button[data-lang='auto_size']").click();
+  upupMan.processWords("work\nhard\nplay\nharder!");
 
 //   window.upupMan = upupMan;
 //   upupMan.setSize("custom", 500, 500);
