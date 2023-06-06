@@ -31,6 +31,7 @@ const rad2deg = rad => rad * 180 / Math.PI;
 class UpupMan {
   imgs = [];
   bgColor = "transparent";
+  fgColor = "#FFF100";
   get defaultDim() {
     return {
       // for text
@@ -53,9 +54,13 @@ class UpupMan {
   sizeType = SIZE_TYPE.AUTO_SIZE;
   size = { width: 100, height: 100 };
   words = [];
-  constructor(canvas) {
+  constructor(canvas = document.createElement("canvas")) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+  };
+  setForegroundColor(color = "#FFF100") {
+    this.fgColor = color;
+    this.render();
   };
   setBackgroundColor(color = "transparent") {
     this.bgColor = color;
@@ -186,9 +191,10 @@ class UpupMan {
     this.size.height = height;
   };
   render() {
-    const { canvas, ctx, bgColor, words, dimensions, size, getImgPos } = this;
+    const { canvas, ctx, fgColor, bgColor, words, dimensions, size, getImgPos } = this;
 
     this.updateOffsetAndSize(this.calcOffsetAndSize(this.calcSizeAndEcho()));
+
     canvas.width = Math.ceil(size.width);
     canvas.height = Math.ceil(size.height);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -196,14 +202,25 @@ class UpupMan {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dimensions.zoom, 0, 0, dimensions.zoom, 0, 0);
 
+    const fgHelper = document.createElement("canvas"), fgHelperCtx = fgHelper.getContext("2d");
+    fgHelper.width = imgW; fgHelper.height = imgH;
+    fgHelperCtx.drawImage(this.imgs.mask, 0, 0);
+    fgHelperCtx.globalCompositeOperation = "source-in";
+    fgHelperCtx.fillStyle = fgColor;
+    fgHelperCtx.fillRect(0, 0, imgW, imgH);
+
+    const zhFont = "900 " + dimensions.fontSizeZh + "px 'LiHei Pro','微軟正黑體','Microsoft JhengHei'";
+    const enFont = "bold " + dimensions.fontSizeEn + "px 'Conv_ITC Avant Garde Gothic LT Bold','Arial Black', 'Arial'";
+
+    // draw img
     words.forEach((line, i) => {
       line.forEach(({ ch, img, color }, j) => {
         if (ch === " ") return;
 
-        // draw img
         // p' = p * shear * rotate * offset * zoom
         // 其中 zoom 由 ctx 的矩阵完成
         const [px, py] = getImgPos(i, j);
+        ctx.drawImage(fgHelper, px, py);
         ctx.drawImage(img, px, py);
 
         // draw character
@@ -211,9 +228,7 @@ class UpupMan {
         ctx.fillStyle = color;
         ctx.textAlign = "center";
         // [^a-zA-Z\d-_.!~*'()]
-        if (encodeURIComponent(ch).length > 1)
-          ctx.font = "900 " + dimensions.fontSizeZh + "px 'LiHei Pro','微軟正黑體','Microsoft JhengHei'";
-        else ctx.font = "bold " + dimensions.fontSizeEn + "px 'Conv_ITC Avant Garde Gothic LT Bold','Arial Black', 'Arial'";
+        ctx.font = encodeURIComponent(ch).length > 1? zhFont: enFont;
         ctx.imageSmoothingEnabled = false;
         ctx.setTransform(dimensions.zoom, 0, 0, dimensions.zoom, 0, 0);
         ctx.translate(px, py);
@@ -225,7 +240,7 @@ class UpupMan {
         ctx.fillText(ch, 0, 0);
         ctx.restore();
       });
-    }, 0);
+    });
   };
   randImg() {
     return this.imgs[getRandInt()];
@@ -239,16 +254,44 @@ class UpupMan {
     });
   };
   async preloadImgs() {
+    const xy2i = (x, y) => ((y * imgW) + x) * 4, i2xy = i => [(i >> 2) % imgW, (i >> 2) / imgW |0];
     let promises = [loadImg("materials/sprites.webp", imgW * imgCount, imgH)];
     const spritesImg = await promises[0];
     const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
     canvas.width = imgW;
     canvas.height = imgH;
+    const maskData = ctx.getImageData(0, 0, imgW, imgH), maskArr = maskData.data;
+    for (let i = 0; i < maskArr.length; i += 4)
+      maskArr[i] = maskArr[i + 1] = maskArr[i + 2] = maskArr[i + 3] = 0;
     for (let i = 0; i < imgCount; ++i) {
       ctx.clearRect(0, 0, imgW, imgH);
       ctx.drawImage(spritesImg, i * imgW, 0, imgW, imgH, 0, 0, imgW, imgH);
+      // i == 0 是一张透明图片 不用处理
+      if (i) {
+        let imgData = ctx.getImageData(0, 0, imgW, imgH), imgArr = imgData.data;
+        // 50, 30 大概在告示牌中间
+        let queue = [[50, 30]];
+        while (queue.length) {
+          const [x, y] = queue.shift();
+          if (x < 0 || y < 0 || x >= imgW || y >= imgH) continue;
+          // 获取rgb转为hsv后的v分量的值。由于hsv的v分量比hsl的l分量的计算量小，故用hsv
+          const i = xy2i(x, y), v = Math.max(imgArr[i], imgArr[i + 1], imgArr[i + 2]) / 255;
+          // 告示牌中间的黄色是亮色 而边框是暗的 0.26刚好可以划分开来 同时v分量取反刚好可以近似下用于透明度
+          if (v < .26) continue;
+          queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+          // 边框颜色 #40210F
+          imgArr[i + 0] = 0x40; imgArr[i + 1] = 0x21; imgArr[i + 2] = 0x0F;
+          imgArr[i + 3] = (1 - v) * 255;
+          maskArr[i + 3] = 255;
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
       promises.push(loadImg(canvas.toDataURL(), imgW, imgH).then(img => this.imgs[i] = img));
     }
+    const maskCanvas = document.createElement("canvas"), maskCtx = maskCanvas.getContext("2d");
+    maskCanvas.width = imgW; maskCanvas.height = imgH;
+    maskCtx.putImageData(maskData, 0, 0);
+    promises.push(loadImg(maskCanvas.toDataURL(), imgW, imgH).then(img => this.imgs.mask = img));
     return Promise.allSettled(promises);
   };
   preloadRes() {
@@ -272,13 +315,15 @@ function setLang(lang) {
         auto_square: "AUTO SQUARE",
         auto_size: "AUTO",
         custom_size: "CUSTOM",
-        custom_bg_color: "CUSTOM",
+        custom_bg_color: "CUSTOM: ",
+        custom_fg_color: "CUSTOM: ",
         adv_settings: "ADVANCED SETTINGS",
         layout: "LAYOUT",
         preset: "Preset:",
         preset_fb_cover: "fb cover",
         preset_square: "square",
         preset_compact: "compact",
+        foreground_colors: "FOREGROUND COLORS",
         msg_placeholder: "Write a message... lay it out with spaces, and newlines!",
       },
       "zh-CN": {
@@ -295,13 +340,15 @@ function setLang(lang) {
         auto_square: "自动（方形）",
         auto_size: "自动",
         custom_size: "自定义",
-        custom_bg_color: "自定义",
+        custom_bg_color: "自定义：",
+        custom_fg_color: "自定义：",
         adv_settings: "高级设置",
         layout: "布局",
         preset: "预设：",
         preset_fb_cover: "脸书封面",
         preset_square: "正方形",
         preset_compact: "紧凑",
+        foreground_colors: "前景色",
         msg_placeholder: "写些想说的话……用空格、换行来布局！",
       },
       "zh-TW": {
@@ -317,13 +364,15 @@ function setLang(lang) {
         auto_square: "自動（方形）",
         auto_size: "自動",
         custom_size: "自定義",
-        custom_bg_color: "自定義",
+        custom_bg_color: "自定義：",
+        custom_fg_color: "自定義：",
         adv_settings: "高級設置",
         layout: "佈局",
         preset: "預設：",
         preset_fb_cover: "臉書封面",
         preset_square: "正方形",
         preset_compact: "緊凑",
+        foreground_colors: "前景色",
         msg_placeholder: "寫些想說的話……用空白、斷行排列小人！",
       },
       "ja": {
@@ -339,13 +388,15 @@ function setLang(lang) {
         auto_square: "自動（角型）",
         auto_size: "自動",
         custom_size: "カスタマイズ",
-        custom_bg_color: "カスタマイズ",
+        custom_bg_color: "カスタマイズ：",
+        custom_fg_color: "カスタマイズ：",
         adv_settings: "高度な設定",
         layout: "レイアウト",
         preset: "プリセット：",
         preset_fb_cover: "Facebookのカバー",
         preset_square: "角型",
         preset_compact: "コンパクト",
+        foreground_colors: "前景色",
         msg_placeholder: "言いたいことを書いて… 空白と改行で組版！",
       }
   };
@@ -359,17 +410,17 @@ function setLang(lang) {
 
 window.onload = async () => {
   const upupMan = new UpupMan(document.querySelector("canvas"));
-  document.querySelectorAll("[data-color]").forEach(a => {
+  document.querySelectorAll(".sect-bg-color [data-color]").forEach(a => {
     const { color } = a.dataset;
     a.style.setProperty("--bg-color", color === "transparent"? "#FFF": color);
     a.addEventListener("click", () => {
       upupMan.setBackgroundColor(color);
     });
   });
-  document.querySelector("input[type=color].bg-block").addEventListener("click", e => {
+  document.querySelector(".sect-bg-color input[type=color].color-block").addEventListener("click", e => {
     upupMan.setBackgroundColor(e.target.value);
   })
-  document.querySelector("input[type=color].bg-block").addEventListener("input", e => {
+  document.querySelector(".sect-bg-color input[type=color].color-block").addEventListener("input", e => {
     upupMan.setBackgroundColor(e.target.value);
   });
   document.getElementById("btn-refresh").addEventListener("click", e => {
@@ -414,6 +465,19 @@ window.onload = async () => {
     const [start, end] = [textarea.selectionStart, textarea.selectionEnd];
     textarea.setRangeText(" ", start, end, start === end? "end": "select");
     upupMan.processWords(textarea.value);
+  });
+  document.querySelectorAll(".sect-fg-color [data-color]").forEach(a => {
+    const { color } = a.dataset;
+    a.style.setProperty("--bg-color", color === "transparent"? "#FFF": color);
+    a.addEventListener("click", () => {
+      upupMan.setForegroundColor(color);
+    });
+  });
+  document.querySelector(".sect-fg-color input[type=color].color-block").addEventListener("click", e => {
+    upupMan.setForegroundColor(e.target.value);
+  })
+  document.querySelector(".sect-fg-color input[type=color].color-block").addEventListener("input", e => {
+    upupMan.setForegroundColor(e.target.value);
   });
 
   const fbDimInfo = { gapX: -25.594502815569612, gapY: -128, offsetX: 422.73333333333335, offsetY: -6.7457627118644075, rotate: -0.36397895650964407, shear: -0.65, zoom: 0.8859000886786875, };

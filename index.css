@@ -46,6 +46,21 @@ main {
   line-height: calc(100vh - 4ex);
 }
 
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+  aside {
+    border: 0;
+    width: 100%;
+    position: static;
+    height: auto;
+  }
+  main {
+    width: 100%;
+  }
+}
+
 [class|="sect"] {
   margin: 10px 0;
 }
@@ -96,7 +111,7 @@ textarea.pui {
   font-weight: bold;
   font-size: 18px;
 }
-.bg-block {
+.color-block {
   cursor: pointer;
   display: inline-block;
   vertical-align: middle;
@@ -108,11 +123,11 @@ textarea.pui {
   transition: all 40ms ease;
   user-select: none;
 }
-.bg-block:hover {
+.color-block:hover {
   filter: drop-shadow(0 0 7px rgb(0 0 0/.75));
   scale: 1.05;
 }
-.bg-block:active {
+.color-block:active {
   filter: drop-shadow(0 0 2px rgb(0 0 0/.5));
   scale: .95;
 }
@@ -239,7 +254,7 @@ input[type=range].pui {
   --bcolor: #000;
 }
 
-canvas {
+main canvas {
   border: 6px #fff solid;
   border-image: repeating-linear-gradient(45deg, transparent 1.75px, rgba(128, 128, 128, .25) 2.25px 3.75px, transparent 4.25px 6px) 6/6px;
   box-sizing: content-box;
